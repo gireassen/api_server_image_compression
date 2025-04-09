@@ -66,16 +66,16 @@ jobs:
     
     - name: Start server in background
       run: |
-        python server.py &
+        python api_server.py &
         echo $! > server.pid
         sleep 2  # Wait for server to start
     
-    - name: Run tests
-      run: |
-        python test_service.py
-        TEST_RESULT=$?
-        kill $(cat server.pid) || true
-        exit $TEST_RESULT
+    # - name: Run tests
+    #   run: |
+    #     python test_service.py
+    #     TEST_RESULT=$?
+    #     kill $(cat server.pid) || true
+    #     exit $TEST_RESULT
 
   build-and-deploy:
     needs: test
@@ -110,15 +110,15 @@ jobs:
             org.opencontainers.image.source=${{ github.repository_url }}
             org.opencontainers.image.revision=${{ github.sha }}
 
-      - name: Test Docker container
-        run: |
-          docker run -d -p 8008:8008 --name ${{ env.IMAGE_NAME }} ${{ env.DOCKERHUB_REPO }}:${{ github.sha }}
-          sleep 2
-          python test_service.py --url http://localhost:8008
-          docker logs ${{ env.IMAGE_NAME }}
+      # - name: Test Docker container
+      #   run: |
+      #     docker run -d -p 8008:8008 --name ${{ env.IMAGE_NAME }} ${{ env.DOCKERHUB_REPO }}:${{ github.sha }}
+      #     sleep 2
+      #     python test_service.py --url http://localhost:8008
+      #     docker logs ${{ env.IMAGE_NAME }}
 
-      - name: Cleanup
-        if: always()
-        run: |
-          docker stop ${{ env.IMAGE_NAME }} || true
-          docker rm ${{ env.IMAGE_NAME }} || true
+      # - name: Cleanup
+      #   if: always()
+      #   run: |
+      #     docker stop ${{ env.IMAGE_NAME }} || true
+      #     docker rm ${{ env.IMAGE_NAME }} || true

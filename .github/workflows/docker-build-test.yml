@@ -49,7 +49,6 @@ jobs:
         run: pytest test_lint.py -v
 
   test:
-    needs: lint-and-test
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4

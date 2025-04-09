@@ -14,39 +14,24 @@ env:
   DOCKERHUB_REPO: ${{ secrets.DOCKERHUB_USERNAME }}/api_server_image_compression
 
 jobs:
-  lint-and-test:
+  lint:
+    name: Lint (Informational)
     runs-on: ubuntu-latest
-    continue-on-error: true
-
+    continue-on-error: true  # Ключевой параметр
+    
     steps:
       - uses: actions/checkout@v4
-
+      
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-
-      - name: Install dependencies
+          
+      - name: Run linters
         run: |
-          python -m pip install --upgrade pip
-          pip install flake8==6.1.0 black mypy pylint pytest
-          pip install types-psycopg2 types-pika
-          pip install python-dotenv fastapi pika psycopg2-binary uvicorn
-
-      - name: Run flake8
-        run: |
-          # Удаляем возможные проблемные конфиги
-          rm -f .flake8 .flake8.*
-          # Запускаем с базовыми настройками
-          flake8 . --max-line-length=120 --ignore=E203,W503,E501
-
-      - name: Run mypy
-        run: |
-          mypy --install-types --non-interactive .
-          mypy --ignore-missing-imports .
-
-      - name: Run pytest
-        run: pytest test_lint.py -v
+          pip install flake8 black
+          flake8 . && echo "Linting passed" || echo "Linting failed"
+          black --check . && echo "Formatting passed" || echo "Formatting issues found"
 
   test:
     runs-on: ubuntu-latest

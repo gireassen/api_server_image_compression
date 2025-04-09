@@ -47,9 +47,6 @@ jobs:
     - name: Message
       run: |
         echo "Пропуск теста..."
-        echo "Этот workflow запущен: $(date)"
-        echo "Ветка: ${{ github.ref }}"
-        echo "Автор: ${{ github.actor }}"
 
     # - name: Set up Python
     #   uses: actions/setup-python@v4

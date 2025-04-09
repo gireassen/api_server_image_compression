@@ -38,6 +38,7 @@ POSTGRES_CONFIG = {
     "port": os.getenv("POSTGRES_PORT")
 }
 
+
 def save_to_db(file_id: str, original_name: str, file_path: str):
     try:
         with psycopg2.connect(**POSTGRES_CONFIG) as conn:
@@ -52,12 +53,13 @@ def save_to_db(file_id: str, original_name: str, file_path: str):
         logger.error(f"Database error: {e}")
         raise
 
+
 @app.post("/upload/")
 async def upload_file(file: UploadFile):
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail="No file uploaded")
 
-    if file.size > MAX_FILE_SIZE * 1024 * 1024: # MAX_FILE_SIZE limit
+    if file.size > MAX_FILE_SIZE * 1024 * 1024:  # MAX_FILE_SIZE limit
         raise HTTPException(status_code=400, detail="File too large")
 
     file_id = str(uuid.uuid4())

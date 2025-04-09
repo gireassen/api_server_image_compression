@@ -11,7 +11,7 @@ on:
 env:
   IMAGE_NAME: api_server_image_compression
   REGISTRY: docker.io
-  DOCKERHUB_REPO: ${{ secrets.DOCKERHUB_USERNAME }}/api_server_image_compression
+  DOCKERHUB_REPO: gias123/api_server_image_compression
 
 jobs:
   lint-and-test:

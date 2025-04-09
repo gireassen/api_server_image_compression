@@ -10,13 +10,11 @@ from db import create_database, create_table
 
 load_dotenv()
 
-# Настройка логирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-# Проверка переменных окружения
 required_env_vars = [
     "RUN_PORT", "RABBITMQ_HOST", "RABBITMQ_USER", "RABBITMQ_PASSWORD",
     "QUEUE_NAME", "DLQ_NAME", "UPLOAD_DIR", "POSTGRES_DB", "POSTGRES_USER",
@@ -27,9 +25,8 @@ missing_vars = [var for var in required_env_vars if not os.getenv(var)]
 if missing_vars:
     raise RuntimeError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
-# Настройки
-RUN_PORT = int(os.getenv("RUN_PORT", "8000"))   # default 8000
-UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads") # default uploads
+RUN_PORT = int(os.getenv("RUN_PORT", "8000"))
+UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 MAX_FILE_SIZE = int(os.getenv("MAX_FILE_SIZE"))
 
@@ -60,7 +57,7 @@ async def upload_file(file: UploadFile):
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail="No file uploaded")
 
-    if file.size > MAX_FILE_SIZE * 1024 * 1024:  # MAX_FILE_SIZE limit
+    if file.size > MAX_FILE_SIZE * 1024 * 1024: # MAX_FILE_SIZE limit
         raise HTTPException(status_code=400, detail="File too large")
 
     file_id = str(uuid.uuid4())

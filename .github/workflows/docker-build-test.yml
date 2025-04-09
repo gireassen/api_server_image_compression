@@ -21,19 +21,21 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/sup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 black mypy pylint pytest
-          pip install types-psycopg2 types-pika types-ujson types-requests types-PyYAML
+          pip install flake8==6.1.0 black mypy pylint pytest
+          pip install types-psycopg2 types-pika
           pip install python-dotenv fastapi pika psycopg2-binary uvicorn
 
       - name: Run flake8
-        run: flake8 .
+        run: |
+          rm -f .flake8 .flake8.*
+          flake8 . --config=
 
       - name: Run mypy
         run: |

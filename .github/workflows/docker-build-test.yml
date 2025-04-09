@@ -1,0 +1,123 @@
+name: Docker Build, Test and Deploy
+
+on:
+  push:
+    branches: [main, test-branch]
+    paths-ignore:
+      - 'README.md'
+  pull_request:
+    branches: [main, test-branch]
+
+env:
+  IMAGE_NAME: api_server_image_compression
+  REGISTRY: docker.io
+  DOCKERHUB_REPO: ${{ secrets.DOCKERHUB_USERNAME }}/api_server_image_compression
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest  # Используем последний Ubuntu
+
+    steps:
+      # Шаг 1: Загрузка кода
+      - uses: actions/checkout@v4
+
+      # Шаг 2: Установка Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"  # Укажите нужную версию Python
+
+      # Шаг 3: Установка зависимостей
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black mypy pylint pytest
+
+      # Шаг 4: Запуск pytest (включая test_lint.py)
+      - name: Run pytest (with lint checks)
+        run: pytest test_lint.py -v  # `-v` для подробного вывода
+
+      # Шаг 5: Дополнительные проверки (опционально)
+      - name: Run flake8 (directly)
+        run: flake8 .  # Можно дублировать проверку
+
+      - name: Run black (check formatting)
+        run: black --check .  # Проверит, соответствует ли код black
+
+      - name: Run mypy (static typing)
+        run: mypy .  # Проверит типы, если они используются
+
+  test:
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+    
+    - name: Start server in background
+      run: |
+        python server.py &
+        echo $! > server.pid
+        sleep 2  # Wait for server to start
+    
+    - name: Run tests
+      run: |
+        python test_service.py
+        TEST_RESULT=$?
+        kill $(cat server.pid) || true
+        exit $TEST_RESULT
+
+  build-and-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: |
+            ${{ env.DOCKERHUB_REPO }}:latest
+            ${{ env.DOCKERHUB_REPO }}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.repository_url }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Test Docker container
+        run: |
+          docker run -d -p 8008:8008 --name ${{ env.IMAGE_NAME }} ${{ env.DOCKERHUB_REPO }}:${{ github.sha }}
+          sleep 2
+          python test_service.py --url http://localhost:8008
+          docker logs ${{ env.IMAGE_NAME }}
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker stop ${{ env.IMAGE_NAME }} || true
+          docker rm ${{ env.IMAGE_NAME }} || true

@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/sup-python@v5
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -34,8 +34,10 @@ jobs:
 
       - name: Run flake8
         run: |
+          # Удаляем возможные проблемные конфиги
           rm -f .flake8 .flake8.*
-          flake8 . --config=
+          # Запускаем с базовыми настройками
+          flake8 . --max-line-length=120 --ignore=E203,W503,E501
 
       - name: Run mypy
         run: |

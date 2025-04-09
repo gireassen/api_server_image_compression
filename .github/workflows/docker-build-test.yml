@@ -15,37 +15,30 @@ env:
 
 jobs:
   lint-and-test:
-    runs-on: ubuntu-latest  # Используем последний Ubuntu
+    runs-on: ubuntu-latest
 
     steps:
-      # Шаг 1: Загрузка кода
       - uses: actions/checkout@v4
 
-      # Шаг 2: Установка Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"  # Укажите нужную версию Python
+          python-version: "3.11"
 
-      # Шаг 3: Установка зависимостей
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install flake8 black mypy pylint pytest
+          pip install types-psycopg2 types-python-dotenv types-pika types-FastAPI types-uvicorn
 
-      # Шаг 4: Запуск pytest (включая test_lint.py)
-      - name: Run pytest (with lint checks)
-        run: pytest test_lint.py -v  # `-v` для подробного вывода
+      - name: Run flake8
+        run: flake8 .
 
-      # Шаг 5: Дополнительные проверки (опционально)
-      - name: Run flake8 (directly)
-        run: flake8 .  # Можно дублировать проверку
+      - name: Run mypy
+        run: mypy .
 
-      - name: Run black (check formatting)
-        run: black --check .  # Проверит, соответствует ли код black
-
-      - name: Run mypy (static typing)
-        run: mypy .  # Проверит типы, если они используются
+      - name: Run pytest
+        run: pytest test_lint.py -v
 
   test:
     needs: lint-and-test

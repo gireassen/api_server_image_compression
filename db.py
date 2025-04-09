@@ -37,11 +37,11 @@ def create_database():
         # Подключаемся к системной БД для создания новой БД
         temp_config = POSTGRES_CONFIG.copy()
         temp_config["dbname"] = "postgres"
-        
+
         conn = psycopg2.connect(**temp_config)
         conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = conn.cursor()
-        
+
         # Проверяем существование БД
         cursor.execute("SELECT 1 FROM pg_database WHERE datname = %s", (POSTGRES_DB,))
         exists = cursor.fetchone()
@@ -52,7 +52,7 @@ def create_database():
             logger.info(f"База данных '{POSTGRES_DB}' создана")
         else:
             logger.info(f"База данных '{POSTGRES_DB}' уже существует")
-            
+
     except psycopg2.Error as e:
         logger.error(f"Ошибка создания БД: {e}")
     finally:
@@ -68,7 +68,7 @@ def create_table():
             
         conn = psycopg2.connect(**POSTGRES_CONFIG)
         cursor = conn.cursor()
-        
+
         # Проверка существования таблицы
         cursor.execute("""
             SELECT EXISTS (

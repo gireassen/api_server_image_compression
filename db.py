@@ -45,7 +45,7 @@ def create_database():
         # Проверяем существование БД
         cursor.execute("SELECT 1 FROM pg_database WHERE datname = %s", (POSTGRES_DB,))
         exists = cursor.fetchone()
-        
+
         if not exists:
             cursor.execute(sql.SQL("CREATE DATABASE {}").format(
                 sql.Identifier(POSTGRES_DB)))
@@ -65,7 +65,7 @@ def create_table():
     try:
         if not check_connection():
             raise RuntimeError("Нет подключения к БД")
-            
+
         conn = psycopg2.connect(**POSTGRES_CONFIG)
         cursor = conn.cursor()
 
@@ -77,7 +77,7 @@ def create_table():
             );
         """)
         exists = cursor.fetchone()[0]
-        
+
         if not exists:
             cursor.execute("""
                 CREATE TABLE files (
@@ -88,7 +88,7 @@ def create_table():
                     created_at TIMESTAMP DEFAULT NOW(),
                     updated_at TIMESTAMP DEFAULT NOW()
                 );
-                
+
                 CREATE OR REPLACE FUNCTION update_timestamp()
                 RETURNS TRIGGER AS $$
                 BEGIN
@@ -96,7 +96,7 @@ def create_table():
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql;
-                
+
                 CREATE TRIGGER update_files_timestamp
                 BEFORE UPDATE ON files
                 FOR EACH ROW
@@ -106,7 +106,7 @@ def create_table():
             logger.info("Таблица 'files' создана")
         else:
             logger.info("Таблица 'files' уже существует")
-            
+
     except psycopg2.Error as e:
         logger.error(f"Ошибка создания таблицы: {e}")
     finally:

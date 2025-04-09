@@ -62,7 +62,7 @@ async def upload_file(file: UploadFile):
 
     file_id = str(uuid.uuid4())
     file_path = os.path.join(UPLOAD_DIR, file_id)
-    
+
     try:
         with open(file_path, "wb") as f:
             f.write(await file.read())
@@ -79,7 +79,7 @@ async def upload_file(file: UploadFile):
                 credentials=credentials
             )
         )
-        
+
         try:
             channel = connection.channel()
             channel.queue_declare(queue=os.getenv("QUEUE_NAME"), arguments={

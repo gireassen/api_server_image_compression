@@ -28,10 +28,10 @@ if missing_vars:
     raise RuntimeError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
 # Настройки
-RUN_PORT = int(os.getenv("RUN_PORT"))
-UPLOAD_DIR = os.getenv("UPLOAD_DIR")
-MAX_FILE_SIZE = int(os.getenv("MAX_FILE_SIZE"))
+RUN_PORT = int(os.getenv("RUN_PORT", "8000"))   # default 8000
+UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads") # default uploads
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+MAX_FILE_SIZE = int(os.getenv("MAX_FILE_SIZE"))
 
 POSTGRES_CONFIG = {
     "dbname": os.getenv("POSTGRES_DB"),
